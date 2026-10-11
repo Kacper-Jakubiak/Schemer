@@ -36,5 +36,3 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(eigen)
 
 target_link_libraries(Schemer PUBLIC Eigen3::Eigen)
-
-target_compile_definitions(Schemer PUBLIC -DPROJECT_ROOT="${CMAKE_SOURCE_DIR}")
