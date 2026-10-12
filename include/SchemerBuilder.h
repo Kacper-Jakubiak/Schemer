@@ -50,11 +50,19 @@ private:
     [[nodiscard]] std::variant<double, std::vector<double>> compute_force_variant(Eigen::Index starting_index) const;
 
     /**
+     * @brief Calculates grid point index for the probability reset target location.
+     * @param starting_index Grid point index corresponding to origin x = 0.0.
+     * @return Eigen::Index Grid index for the reset target.
+     */
+    [[nodiscard]] Eigen::Index compute_reset_index(Eigen::Index starting_index) const;
+
+    /**
      * @brief Builds time-stepping matrix based on current settings and forces.
      * @param force_variant Computed force representation.
+     * @param reset_target Grid index where siphoned probability is concentrated.
      * @return Eigen::MatrixXd Time step update matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd compute_step_matrix(const std::variant<double, std::vector<double>>& force_variant) const;
+    [[nodiscard]] Eigen::MatrixXd compute_step_matrix(const std::variant<double, std::vector<double>> &force_variant, Eigen::Index reset_target) const;
 
 public:
     /**
@@ -181,6 +189,26 @@ public:
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
     SchemerBuilder &set_zero_middle();
+
+    /**
+     * @brief Sets the probability reset target to the spatial origin (x = 0.0).
+     * @return SchemerBuilder& Reference to this builder for chaining.
+     */
+    SchemerBuilder &set_reset_index_zero();
+
+    /**
+     * @brief Sets the probability reset target to a specific grid point index.
+     * @param value Grid index for the reset target.
+     * @return SchemerBuilder& Reference to this builder for chaining.
+     */
+    SchemerBuilder &set_reset_index(Eigen::Index value);
+
+    /**
+     * @brief Sets the rate of probability siphoning for stochastic resetting.
+     * @param value Reset rate value.
+     * @return SchemerBuilder& Reference to this builder for chaining.
+     */
+    SchemerBuilder &set_reset_rate(double value);
 
     /**
      * @brief Builds and returns a fully configured simulation runner ready to execute.

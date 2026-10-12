@@ -48,6 +48,17 @@ public:
      */
     [[nodiscard]] Eigen::MatrixXd build_force_matrix(const std::variant<double, std::vector<double>>& force_variant) const;
 
+    /**
+     * @brief Builds the probability reset rate matrix.
+     *
+     * Siphons probability at a constant rate from all spatial points
+     * and concentrates it at the specified target index.
+     *
+     * @param reset_index The grid index where siphoned probability is concentrated.
+     * @return Eigen::MatrixXd The reset rate matrix.
+     */
+    [[nodiscard]] Eigen::MatrixXd build_reset_matrix(Eigen::Index reset_index) const;
+
 private:
     /// Reference to simulation settings.
     const Config& config;

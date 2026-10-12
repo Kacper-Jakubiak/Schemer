@@ -70,6 +70,29 @@ struct ForceInput {
 };
 
 /**
+ * @struct ResetInput
+ * @brief Configuration for where siphoned probability is concentrated during resetting.
+ */
+struct ResetInput {
+    /**
+     * @enum Type
+     * @brief Method used to specify the reset target location.
+     */
+    enum class Type {
+        Zero,   ///< Reset probability to the spatial origin (x = 0.0).
+        Index   ///< Reset probability to a specific grid index.
+    };
+
+    Type type = Type::Zero;   ///< Selected reset target type.
+    Eigen::Index index = 0;   ///< Grid index when type is Index.
+
+    /**
+     * @brief Rate of probability siphoning for stochastic resetting.
+     */
+    double rate = 0.0;
+};
+
+/**
  * @struct Config
  * @brief Holds all simulation settings, physical parameters, grid specs, and file output options.
  */
@@ -123,18 +146,12 @@ struct Config {
 
     /**
      * @brief Time stepping method (\theta).
-     *
-     * - 0.0: Explicit scheme (Forward Euler)
-     * - 0.5: Semi-implicit scheme (Crank-Nicolson)
-     * - 1.0: Implicit scheme (Backward Euler)
      */
     double theta = 0.5;
 
     /**
      * @brief Controls how much detail is printed to the terminal.
      *
-     * - 0: Silent mode (no messages)
-     * - 1: Status updates
      */
     int verbose = 1;
 
@@ -160,6 +177,9 @@ struct Config {
 
     /// Configuration for external forces.
     ForceInput force_input;
+
+    /// Configuration for reset target location.
+    ResetInput reset_input;
 
     /**
      * @brief Calculates uniform grid step size (\Delta x).

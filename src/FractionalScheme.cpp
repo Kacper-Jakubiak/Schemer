@@ -147,3 +147,16 @@ Eigen::MatrixXd FractionalScheme::build_force_matrix(const std::variant<double, 
     }
     return build_force(std::get<std::vector<double>>(force_variant));
 }
+
+[[nodiscard]] Eigen::MatrixXd FractionalScheme::build_reset_matrix(const Eigen::Index reset_index) const {
+    const Eigen::Index grid_size = config.get_size();
+    const double reset_rate = config.reset_input.rate;
+
+    Eigen::MatrixXd reset_rate_matrix = -reset_rate * Eigen::MatrixXd::Identity(grid_size, grid_size);
+
+    for (int i = 0; i < grid_size; ++i) {
+        reset_rate_matrix(reset_index, i) += reset_rate;
+    }
+
+    return reset_rate_matrix;
+}

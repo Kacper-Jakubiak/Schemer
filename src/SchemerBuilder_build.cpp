@@ -125,17 +125,32 @@ std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(
     }
 }
 
-Eigen::MatrixXd SchemerBuilder::compute_step_matrix(const std::variant<double, std::vector<double>>& force_variant) const {
+Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index starting_index) const {
+    switch (inner_config.reset_input.type) {
+        case ResetInput::Type::Index:
+            return inner_config.reset_input.index;
+        case ResetInput::Type::Zero:
+            return starting_index;
+
+        default:
+            throw std::logic_error("Unhandled ResetInput::Type enum value");
+    }
+}
+
+Eigen::MatrixXd SchemerBuilder::compute_step_matrix(const std::variant<double, std::vector<double>>& force_variant, const Eigen::Index reset_index) const {
     const FractionalScheme fractional_scheme{inner_config};
 
     const Eigen::MatrixXd diffusion_matrix = fractional_scheme.build_diffusion_matrix();
     const Eigen::MatrixXd force_matrix = fractional_scheme.build_force_matrix(force_variant);
+    const Eigen::MatrixXd reset_rate_matrix = fractional_scheme.build_reset_matrix(reset_index);
+
+    const Eigen::MatrixXd total_operator = diffusion_matrix + force_matrix + reset_rate_matrix;
 
     const Eigen::Index grid_size = inner_config.get_size();
     const Eigen::MatrixXd id = Eigen::MatrixXd::Identity(grid_size, grid_size);
 
-    const Eigen::MatrixXd Lhs = id + inner_config.theta * (force_matrix + diffusion_matrix);
-    const Eigen::MatrixXd Rhs = id - (1 - inner_config.theta) * (force_matrix + diffusion_matrix);
+    const Eigen::MatrixXd Lhs = id + inner_config.theta * total_operator;
+    const Eigen::MatrixXd Rhs = id - (1.0 - inner_config.theta) * total_operator;
 
     const Eigen::PartialPivLU<Eigen::MatrixXd> solver(Lhs);
     return solver.solve(Rhs);
@@ -145,11 +160,12 @@ SimulationSetup SchemerBuilder::build_setup() const {
     validate_parameters();
 
     const Eigen::Index starting_index = compute_starting_index();
+    const Eigen::Index reset_index = compute_reset_index(starting_index);
 
     auto force_variant = compute_force_variant(starting_index);
     auto initial_state = compute_initial_state(starting_index);
 
-    Eigen::MatrixXd step_matrix = compute_step_matrix(force_variant);
+    Eigen::MatrixXd step_matrix = compute_step_matrix(force_variant, reset_index);
 
     return SimulationSetup{
         inner_config,

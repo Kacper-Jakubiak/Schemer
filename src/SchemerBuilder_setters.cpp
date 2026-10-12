@@ -131,3 +131,21 @@ SchemerBuilder &SchemerBuilder::set_zero_middle() {
     inner_config.zero_input.type = ZeroInput::Type::Middle;
     return *this;
 }
+
+// --- Resetting options ---
+
+SchemerBuilder & SchemerBuilder::set_reset_index_zero() {
+    inner_config.reset_input.type = ResetInput::Type::Zero;
+    return *this;
+}
+
+SchemerBuilder & SchemerBuilder::set_reset_index(const Eigen::Index value) {
+    inner_config.reset_input.index = value;
+    inner_config.reset_input.type = ResetInput::Type::Index;
+    return *this;
+}
+
+SchemerBuilder & SchemerBuilder::set_reset_rate(const double value) {
+    inner_config.reset_input.rate = value;
+    return *this;
+}
