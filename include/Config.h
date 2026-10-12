@@ -12,7 +12,7 @@
 
 /**
  * @struct ZeroInput
- * @brief Configuration for positioning the spatial origin ($x = 0.0$) on the grid.
+ * @brief Configuration for positioning the spatial origin (x = 0.0) on the grid.
  */
 struct ZeroInput {
     /**
@@ -32,7 +32,7 @@ struct ZeroInput {
 
 /**
  * @struct ValuesInput
- * @brief Configuration for initial values applied across the grid at $t = 0$.
+ * @brief Configuration for initial values applied across the grid at t = 0.
  */
 struct ValuesInput {
     /**
@@ -40,7 +40,7 @@ struct ValuesInput {
      * @brief Type of starting values.
      */
     enum class Type {
-        Dirac,  ///< Single peak (impulse) at the origin ($x = 0.0$).
+        Dirac,  ///< Single peak (impulse) at the origin (x = 0.0).
         Vector  ///< Custom starting values provided for all grid points.
     };
 
@@ -59,7 +59,7 @@ struct ForceInput {
      */
     enum class Type {
         Drift,    ///< Constant force applied uniformly across the domain.
-        Function, ///< Spatially varying force defined by a function $f(x)$.
+        Function, ///< Spatially varying force defined by a function f(x).
         Vector    ///< Custom force value provided for each grid point.
     };
 
@@ -75,9 +75,9 @@ struct ForceInput {
  */
 struct Config {
     /**
-     * @brief Stability parameter ($\alpha$).
+     * @brief Stability parameter (\alpha).
      *
-     * Controls the order of the fractional derivative, restricted to $(0, 2]$.
+     * Controls the order of the fractional derivative, restricted to (0, 2].
      * A value of 2.0 gives standard Gaussian diffusion. Values less than 2.0
      * produce superdiffusion (Lévy flights) with heavy tails, making long jumps
      * more likely.
@@ -85,18 +85,18 @@ struct Config {
     double alpha = 0.0;
 
     /**
-     * @brief Skewness parameter ($\beta$).
+     * @brief Skewness parameter (\beta).
      *
-     * Controls the left-right bias of the diffusion, restricted to $[-1, 1]$.
+     * Controls the left-right bias of the diffusion, restricted to [-1, 1].
      * A value of 0 gives a balanced, symmetric spread, negative values lean left,
      * and positive values lean right.
      */
     double beta = 0.0;
 
     /**
-     * @brief Scale parameter ($\sigma$).
+     * @brief Scale parameter (\sigma).
      *
-     * Controls the overall spread or width of the distribution. Must be positive ($> 0$).
+     * Controls the overall spread or width of the distribution. Must be positive (> 0).
      */
     double sigma = 1.0;
 
@@ -108,33 +108,33 @@ struct Config {
     double length = 40.0;
 
     /**
-     * @brief Number of grid intervals ($N$).
+     * @brief Number of grid intervals (N).
      *
-     * Divides the domain into $N$ segments, resulting in $N + 1$ total grid points.
+     * Divides the domain into N segments, resulting in N + 1 total grid points.
      */
     Eigen::Index num_intervals = 1000;
 
     /**
-     * @brief Time step size ($\Delta t$).
+     * @brief Time step size (\Delta t).
      *
      * The duration of a single step forward in time for numerical integration.
      */
     double dt = 0.001;
 
     /**
-     * @brief Time stepping method ($\theta$).
+     * @brief Time stepping method (\theta).
      *
-     * - $0.0$: Explicit scheme (Forward Euler)
-     * - $0.5$: Semi-implicit scheme (Crank-Nicolson)
-     * - $1.0$: Implicit scheme (Backward Euler)
+     * - 0.0: Explicit scheme (Forward Euler)
+     * - 0.5: Semi-implicit scheme (Crank-Nicolson)
+     * - 1.0: Implicit scheme (Backward Euler)
      */
     double theta = 0.5;
 
     /**
      * @brief Controls how much detail is printed to the terminal.
      *
-     * - $0$: Silent mode (no messages)
-     * - $1$: Status updates
+     * - 0: Silent mode (no messages)
+     * - 1: Status updates
      */
     int verbose = 1;
 
@@ -162,7 +162,7 @@ struct Config {
     ForceInput force_input;
 
     /**
-     * @brief Calculates uniform grid step size ($\Delta x$).
+     * @brief Calculates uniform grid step size (\Delta x).
      * @return double Grid step size.
      */
     [[nodiscard]] constexpr double get_dx() const noexcept {
@@ -170,7 +170,7 @@ struct Config {
     }
 
     /**
-     * @brief Gets the total number of grid points ($N + 1$).
+     * @brief Gets the total number of grid points (N + 1).
      * @return Eigen::Index Total grid point count.
      */
     [[nodiscard]] constexpr Eigen::Index get_size() const noexcept {
@@ -179,7 +179,7 @@ struct Config {
 
     /**
      * @brief Gets position coordinates for all grid points.
-     * @param starting_index Grid point index corresponding to $x = 0.0$.
+     * @param starting_index Grid point index corresponding to x = 0.0.
      * @return std::vector<double> List of spatial positions.
      */
     [[nodiscard]] std::vector<double> get_coordinates(const Eigen::Index starting_index = 0) const {

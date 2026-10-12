@@ -19,7 +19,7 @@
 class FractionalScheme {
 public:
     /**
-     * @brief Small tolerance value used to check if $\alpha = 1$.
+     * @brief Small tolerance value used to check if \alpha = 1.
      */
     static constexpr double ALPHA_EPSILON = 1e-8;
 
@@ -32,7 +32,7 @@ public:
     /**
      * @brief Builds the main spatial diffusion matrix.
      *
-     * Calls build_M1(), build_M2(), or build_M3() depending on the value of $\alpha$.
+     * Calls build_M1(), build_M2(), or build_M3() depending on the value of \alpha.
      *
      * @return Eigen::MatrixXd The spatial diffusion matrix.
      */
@@ -52,20 +52,20 @@ private:
     /// Reference to simulation settings.
     const Config& config;
 
-    /// Weight for the left-side fractional derivative ($\omega_L$).
+    /// Weight for the left-side fractional derivative (\omega_L).
     double L_omega;
 
-    /// Weight for the right-side fractional derivative ($\omega_R$).
+    /// Weight for the right-side fractional derivative (\omega_R).
     double R_omega;
 
-    /// Weight factor used when $\alpha = 1$.
+    /// Weight factor used when \alpha = 1.
     double cauchyOmega;
 
-    /// $\alpha$ rounded up.
+    /// \alpha rounded up.
     double n;
 
     /**
-     * @brief Calculates fractional weight coefficients ($\lambda_k^{(\alpha)}$).
+     * @brief Calculates fractional weight coefficients (\lambda_k^{(\alpha)}).
      *
      * Generates a list of weight values used to construct the diffusion matrix.
      *
@@ -74,20 +74,20 @@ private:
     [[nodiscard]] std::vector<double> get_lambdas() const;
 
     /**
-     * @brief Builds the diffusion matrix for $0 < \alpha < 1$.
-     * @return Eigen::MatrixXd Diffusion matrix for $\alpha < 1$.
+     * @brief Builds the diffusion matrix for 0 < \alpha < 1.
+     * @return Eigen::MatrixXd Diffusion matrix for \alpha < 1.
      */
     [[nodiscard]] Eigen::MatrixXd build_M1() const;
 
     /**
-     * @brief Builds the diffusion matrix for $1 < \alpha \le 2$.
-     * @return Eigen::MatrixXd Diffusion matrix for $\alpha > 1$.
+     * @brief Builds the diffusion matrix for 1 < \alpha \le 2.
+     * @return Eigen::MatrixXd Diffusion matrix for \alpha > 1.
      */
     [[nodiscard]] Eigen::MatrixXd build_M2() const;
 
     /**
-     * @brief Builds the diffusion matrix for $\alpha = 1$.
-     * @return Eigen::MatrixXd Diffusion matrix for $\alpha = 1$.
+     * @brief Builds the diffusion matrix for \alpha = 1.
+     * @return Eigen::MatrixXd Diffusion matrix for \alpha = 1.
      */
     [[nodiscard]] Eigen::MatrixXd build_M3() const;
 

@@ -36,3 +36,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(eigen)
 
 target_link_libraries(Schemer PUBLIC Eigen3::Eigen)
+
+enable_testing()
+add_subdirectory(tests)

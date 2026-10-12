@@ -29,12 +29,12 @@ struct SimulationSetup {
     Eigen::MatrixXd step_matrix;
 
     /**
-     * @brief Starting values for all physical points across the spatial grid at time $t = 0$.
+     * @brief Starting values for all physical points across the spatial grid at time t = 0.
      */
     Eigen::VectorXd initial_state;
 
     /**
-     * @brief Grid point index corresponding to position $x = 0.0$.
+     * @brief Grid point index corresponding to position x = 0.0.
      */
     Eigen::Index starting_index;
 
