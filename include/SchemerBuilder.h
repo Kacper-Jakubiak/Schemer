@@ -33,28 +33,28 @@ private:
      * @brief Calculates grid point index corresponding to origin x = 0.0.
      * @return Eigen::Index Grid index for the origin.
      */
-    [[nodiscard]] Eigen::Index compute_starting_index() const;
+     Eigen::Index compute_starting_index() const;
 
     /**
      * @brief Creates starting value vector for all grid points at t = 0.
      * @param starting_index Grid point index for origin x = 0.0.
      * @return Eigen::VectorXd Initial grid values vector.
      */
-    [[nodiscard]] Eigen::VectorXd compute_initial_state(Eigen::Index starting_index) const;
+     Eigen::VectorXd compute_initial_state(Eigen::Index starting_index) const;
 
     /**
      * @brief Converts configured external force into scalar or vector format.
      * @param starting_index Grid point index for origin x = 0.0.
      * @return std::variant<double, std::vector<double>> Force representation.
      */
-    [[nodiscard]] std::variant<double, std::vector<double>> compute_force_variant(Eigen::Index starting_index) const;
+     std::variant<double, std::vector<double>> compute_force_variant(Eigen::Index starting_index) const;
 
     /**
      * @brief Calculates grid point index for the probability reset target location.
      * @param starting_index Grid point index corresponding to origin x = 0.0.
      * @return Eigen::Index Grid index for the reset target.
      */
-    [[nodiscard]] Eigen::Index compute_reset_index(Eigen::Index starting_index) const;
+     Eigen::Index compute_reset_index(Eigen::Index starting_index) const;
 
     /**
      * @brief Builds time-stepping matrix based on current settings and forces.
@@ -62,7 +62,7 @@ private:
      * @param reset_target Grid index where siphoned probability is concentrated.
      * @return Eigen::MatrixXd Time step update matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd compute_step_matrix(const std::variant<double, std::vector<double>> &force_variant, Eigen::Index reset_target) const;
+     Eigen::MatrixXd compute_step_matrix(const std::variant<double, std::vector<double>> &force_variant, Eigen::Index reset_target) const;
 
 public:
     /**
@@ -214,11 +214,11 @@ public:
      * @brief Builds and returns a fully configured simulation runner ready to execute.
      * @return SchemerRunner Ready-to-run simulation solver object.
      */
-    [[nodiscard]] SchemerRunner build() const;
+     SchemerRunner build() const;
 
     /**
      * @brief Prepares and returns a complete simulation setup structure.
      * @return SimulationSetup Prepared setup with configuration, matrices, and initial states.
      */
-    [[nodiscard]] SimulationSetup build_setup() const;
+     SimulationSetup build_setup() const;
 };

@@ -36,7 +36,7 @@ public:
      *
      * @return Eigen::MatrixXd The spatial diffusion matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd build_diffusion_matrix() const;
+     Eigen::MatrixXd build_diffusion_matrix() const;
 
     /**
      * @brief Builds the force matrix.
@@ -46,7 +46,7 @@ public:
      * @param force_variant Either a single value (`double`) or grid values (`std::vector<double>`).
      * @return Eigen::MatrixXd The force matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd build_force_matrix(const std::variant<double, std::vector<double>>& force_variant) const;
+     Eigen::MatrixXd build_force_matrix(const std::variant<double, std::vector<double>>& force_variant) const;
 
     /**
      * @brief Builds the probability reset rate matrix.
@@ -57,7 +57,7 @@ public:
      * @param reset_index The grid index where siphoned probability is concentrated.
      * @return Eigen::MatrixXd The reset rate matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd build_reset_matrix(Eigen::Index reset_index) const;
+     Eigen::MatrixXd build_reset_matrix(Eigen::Index reset_index) const;
 
 private:
     /// Reference to simulation settings.
@@ -82,37 +82,37 @@ private:
      *
      * @return std::vector<double> List of calculated weights.
      */
-    [[nodiscard]] std::vector<double> get_lambdas() const;
+     std::vector<double> get_lambdas() const;
 
     /**
      * @brief Builds the diffusion matrix for 0 < \alpha < 1.
      * @return Eigen::MatrixXd Diffusion matrix for \alpha < 1.
      */
-    [[nodiscard]] Eigen::MatrixXd build_M1() const;
+     Eigen::MatrixXd build_M1() const;
 
     /**
      * @brief Builds the diffusion matrix for 1 < \alpha \le 2.
      * @return Eigen::MatrixXd Diffusion matrix for \alpha > 1.
      */
-    [[nodiscard]] Eigen::MatrixXd build_M2() const;
+     Eigen::MatrixXd build_M2() const;
 
     /**
      * @brief Builds the diffusion matrix for \alpha = 1.
      * @return Eigen::MatrixXd Diffusion matrix for \alpha = 1.
      */
-    [[nodiscard]] Eigen::MatrixXd build_M3() const;
+     Eigen::MatrixXd build_M3() const;
 
     /**
      * @brief Builds the force matrix for a constant force.
      * @param mi Constant force value.
      * @return Eigen::MatrixXd Constant force matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd build_drift(double mi) const;
+     Eigen::MatrixXd build_drift(double mi) const;
 
     /**
      * @brief Builds the force matrix for a variable force across grid points.
      * @param force Force value at each grid point.
      * @return Eigen::MatrixXd Variable force matrix.
      */
-    [[nodiscard]] Eigen::MatrixXd build_force(const std::vector<double>& force) const;
+     Eigen::MatrixXd build_force(const std::vector<double>& force) const;
 };
