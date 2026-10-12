@@ -105,7 +105,7 @@ struct Config {
      * produce superdiffusion (Lévy flights) with heavy tails, making long jumps
      * more likely.
      */
-    double alpha = 1.5;
+    double alpha = 0.0;
 
     /**
      * @brief Skewness parameter (\beta).
