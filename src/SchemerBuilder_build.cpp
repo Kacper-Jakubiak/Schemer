@@ -11,7 +11,7 @@
 #include "../include/FractionalScheme.h"
 
 void SchemerBuilder::validate_parameters() const {
-    if (inner_config.alpha <= 0.0 || inner_config.alpha > 2.0) throw std::invalid_argument("alpha must be in (0, 2]");
+    if (inner_config.alpha <= 0.0 || inner_config.alpha >= 2.0) throw std::invalid_argument("alpha must be in (0, 2]");
     if (std::abs(inner_config.beta) > 1.0) throw std::invalid_argument("beta must be in [-1, 1]");
     if (inner_config.sigma < 0.0) throw std::invalid_argument("sigma must be non-negative");
     if (inner_config.length <= 0.0) throw std::invalid_argument("length must be positive");
@@ -20,6 +20,7 @@ void SchemerBuilder::validate_parameters() const {
     if (inner_config.num_intervals <= 0) throw std::invalid_argument("grid_points must be positive");
     if (inner_config.theta < 0.0 || inner_config.theta > 1.0) throw std::invalid_argument("theta must be in [0, 1]");
     if (inner_config.log_interval_percent < 0.0) throw std::invalid_argument("log interval percent must be non-negative");
+    if (inner_config.reset_input.rate < 0.0) throw std::invalid_argument("reset input rate must be non-negative");
 
     // (beta != 0) is not supported when alpha = 1.0
     if (std::abs(inner_config.alpha - 1) < FractionalScheme::ALPHA_EPSILON && inner_config.beta != 0.0) {
@@ -128,6 +129,8 @@ std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(
 Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index starting_index) const {
     switch (inner_config.reset_input.type) {
         case ResetInput::Type::Index:
+            if (inner_config.reset_input.index < 0 || inner_config.reset_input.index >= inner_config.get_size())
+                throw std::invalid_argument("reset input index must be in [0, I)");
             return inner_config.reset_input.index;
         case ResetInput::Type::Zero:
             return starting_index;
@@ -168,11 +171,11 @@ SimulationSetup SchemerBuilder::build_setup() const {
     Eigen::MatrixXd step_matrix = compute_step_matrix(force_variant, reset_index);
 
     return SimulationSetup{
-        inner_config,
-        std::move(step_matrix),
-        std::move(initial_state),
-        starting_index,
-        std::move(force_variant)
+        .config = inner_config,
+        .step_matrix = std::move(step_matrix),
+        .initial_state = std::move(initial_state),
+        .starting_index = starting_index,
+        .force_variant = std::move(force_variant)
     };
 }
 
