@@ -5,12 +5,14 @@
 
 #pragma once
 
-#include "SchemerConfig.h"
+#include "Config.h"
 #include <Eigen/Dense>
 #include <cmath>
 #include <numbers>
 #include <vector>
 #include <variant>
+
+namespace Schemer {
 
 /**
  * @class FractionalScheme
@@ -29,7 +31,7 @@ public:
      * @brief Construct a new FractionalScheme object with configuration settings.
      * @param config Reference to the Config object containing simulation settings.
      */
-    explicit FractionalScheme(const SchemerConfig& config);
+    explicit FractionalScheme(const Config &config);
 
     /**     * @brief Builds the main spatial diffusion matrix.
      *
@@ -37,7 +39,7 @@ public:
      *
      * @return Eigen::MatrixXd The spatial diffusion matrix.
      */
-     Eigen::MatrixXd build_diffusion_matrix() const;
+    Eigen::MatrixXd build_diffusion_matrix() const;
 
     /**
      * @brief Builds the force matrix.
@@ -47,7 +49,7 @@ public:
      * @param force_variant Either a single value (`double`) or grid values (`std::vector<double>`).
      * @return Eigen::MatrixXd The force matrix.
      */
-     Eigen::MatrixXd build_force_matrix(const std::variant<double, std::vector<double>>& force_variant) const;
+    Eigen::MatrixXd build_force_matrix(const std::variant<double, std::vector<double> > &force_variant) const;
 
     /**
      * @brief Builds the probability reset rate matrix.
@@ -58,11 +60,11 @@ public:
      * @param reset_index The grid index where siphoned probability is concentrated.
      * @return Eigen::MatrixXd The reset rate matrix.
      */
-     Eigen::MatrixXd build_reset_matrix(Eigen::Index reset_index) const;
+    Eigen::MatrixXd build_reset_matrix(Eigen::Index reset_index) const;
 
 private:
     /// Reference to simulation settings.
-    const SchemerConfig& config;
+    const Config &config;
 
     /// Weight for the left-side fractional derivative (\omega_L).
     double L_omega;
@@ -83,42 +85,42 @@ private:
      *
      * @return std::vector<double> List of calculated weights.
      */
-     std::vector<double> get_lambdas() const;
+    std::vector<double> get_lambdas() const;
 
     /**
      * @brief Builds the diffusion matrix for 0 < \alpha < 1.
      * @return Eigen::MatrixXd Diffusion matrix for \alpha < 1.
      */
-     Eigen::MatrixXd build_M1() const;
+    Eigen::MatrixXd build_M1() const;
 
     /**
      * @brief Builds the diffusion matrix for 1 < \alpha \le 2.
      * @return Eigen::MatrixXd Diffusion matrix for \alpha > 1.
      */
-     Eigen::MatrixXd build_M2() const;
+    Eigen::MatrixXd build_M2() const;
 
     /**
      * @brief Builds the diffusion matrix for \alpha = 1.
      * @return Eigen::MatrixXd Diffusion matrix for \alpha = 1.
      */
-     Eigen::MatrixXd build_M3() const;
+    Eigen::MatrixXd build_M3() const;
 
     /**
      * @brief Builds the force matrix for a constant force.
      * @param mi Constant force value.
      * @return Eigen::MatrixXd Constant force matrix.
      */
-     Eigen::MatrixXd build_drift(double mi) const;
+    Eigen::MatrixXd build_drift(double mi) const;
 
     /**
      * @brief Builds the force matrix for a variable force across grid points.
      * @param force Force value at each grid point.
      * @return Eigen::MatrixXd Variable force matrix.
      */
-     Eigen::MatrixXd build_force(const std::vector<double>& force) const;
+    Eigen::MatrixXd build_force(const std::vector<double> &force) const;
 };
 
-inline FractionalScheme::FractionalScheme(const SchemerConfig& config) : config(config) {
+inline FractionalScheme::FractionalScheme(const Config &config) : config(config) {
     const double alpha = config.alpha;
     const double dx = config.get_dx();
     n = std::ceil(alpha);
@@ -216,7 +218,7 @@ inline Eigen::MatrixXd FractionalScheme::build_drift(const double mi) const {
     return ni * V;
 }
 
-inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double>& force) const {
+inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double> &force) const {
     const Eigen::Index grid_size = config.get_size();
     const double dx = config.get_dx();
     Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
@@ -244,11 +246,11 @@ inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
 }
 
 inline Eigen::MatrixXd FractionalScheme::build_force_matrix(
-    const std::variant<double, std::vector<double>>& force_variant) const {
+    const std::variant<double, std::vector<double> > &force_variant) const {
     if (std::holds_alternative<double>(force_variant)) {
         return build_drift(std::get<double>(force_variant));
     }
-    return build_force(std::get<std::vector<double>>(force_variant));
+    return build_force(std::get<std::vector<double> >(force_variant));
 }
 
 inline Eigen::MatrixXd FractionalScheme::build_reset_matrix(const Eigen::Index reset_index) const {
@@ -262,3 +264,5 @@ inline Eigen::MatrixXd FractionalScheme::build_reset_matrix(const Eigen::Index r
 
     return -1 * reset_matrix;
 }
+
+} // namespace Schemer

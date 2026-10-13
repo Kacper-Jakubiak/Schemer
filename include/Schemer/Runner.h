@@ -1,5 +1,5 @@
 /**
- * @file SchemerRunner.h
+ * @file Runner.h
  * @brief Runs time-dependent simulations and manages data output.
  */
 
@@ -16,22 +16,24 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include "SchemerSetup.h"
+#include "Setup.h"
+
+namespace Schemer {
 
 /**
- * @class SchemerRunner
+ * @class Runner
  * @brief Manages simulation progress, time stepping, and file saving.
  *
  * Controls the step-by-step execution of the simulation, keeps track of current
  * state values, and logs progress or saves output data to files.
  */
-class SchemerRunner {
+class Runner {
 private:
     /// File path used for writing progress log messages.
     static constexpr std::string_view LOG_FILE_PATH = "progress.log";
 
     /// Setup used to create this simulation.
-    SchemerSetup setup;
+    Setup setup;
 
     /// Total number of time steps completed so far.
     int steps_taken = 0;
@@ -63,15 +65,17 @@ public:
      * @brief Creates a simulation runner using a given setup.
      * @param setup Setup object containing settings, matrices, and initial values.
      */
-    explicit SchemerRunner(SchemerSetup setup) : setup(std::move(setup)) { reset(); }
+    explicit Runner(Setup setup) : setup(std::move(setup)) { reset(); }
 
-    ~SchemerRunner() = default;
+    ~Runner() = default;
 
-    SchemerRunner(const SchemerRunner&) = default;
-    SchemerRunner& operator=(const SchemerRunner&) = default;
+    Runner(const Runner &) = default;
 
-    SchemerRunner(SchemerRunner&&) = default;
-    SchemerRunner& operator=(SchemerRunner&&) = default;
+    Runner &operator=(const Runner &) = default;
+
+    Runner(Runner &&) = default;
+
+    Runner &operator=(Runner &&) = default;
 
     /**
      * @brief Resets the simulation back to step 0 and initial state values.
@@ -103,7 +107,7 @@ public:
      * @brief Gets a copy of the internal simulation setup.
      * @return SimulationSetup Copy of the setup configuration and matrices.
      */
-    SchemerSetup get_setup() const { return setup; }
+    Setup get_setup() const { return setup; }
 
     /**
      * @brief Gets a copy of the current grid values vector.
@@ -112,19 +116,19 @@ public:
     Eigen::VectorXd get_values() const { return current_values; }
 };
 
-inline void SchemerRunner::log(std::ostream &os, const double progress_percent) {
+inline void Runner::log(std::ostream &os, const double progress_percent) {
     const auto now = std::chrono::system_clock::now();
     const auto time = std::chrono::system_clock::to_time_t(now);
 
     os << '['
-       << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S")
-       << "] Progress: "
-       << progress_percent
-       << "%" << std::endl;
+            << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S")
+            << "] Progress: "
+            << progress_percent
+            << "%" << std::endl;
 }
 
-inline void SchemerRunner::save_parameters(std::ostream &os) const {
-    const auto& config = setup.config;
+inline void Runner::save_parameters(std::ostream &os) const {
+    const auto &config = setup.config;
 
     os << '#' << "alpha: " << config.alpha << '\n';
     os << '#' << "beta: " << config.beta << '\n';
@@ -149,7 +153,7 @@ inline void SchemerRunner::save_parameters(std::ostream &os) const {
     if (std::holds_alternative<double>(setup.force_variant)) {
         os << std::get<double>(setup.force_variant) << '\n';
     } else {
-        for (const double force_value : std::get<std::vector<double>>(setup.force_variant)) {
+        for (const double force_value: std::get<std::vector<double> >(setup.force_variant)) {
             os << force_value << config.delimiter;
         }
         os << '\n';
@@ -163,14 +167,14 @@ inline void SchemerRunner::save_parameters(std::ostream &os) const {
     os << std::endl;
 }
 
-inline void SchemerRunner::save_current_values(std::ostream &os) const {
-    const auto& delimiter = setup.config.delimiter;
+inline void Runner::save_current_values(std::ostream &os) const {
+    const auto &delimiter = setup.config.delimiter;
     for (Eigen::Index i = 0; i < current_values.size(); i++)
         os << current_values(i) << delimiter;
     os << std::endl;
 }
 
-inline void SchemerRunner::run(const int steps, std::ostream *history_stream, const int save_every) {
+inline void Runner::run(const int steps, std::ostream *history_stream, const int save_every) {
     if (steps < 0)
         throw std::invalid_argument("amount of steps cannot be negative");
     if (save_every < 0)
@@ -213,7 +217,7 @@ inline void SchemerRunner::run(const int steps, std::ostream *history_stream, co
         log(log_stream, 100.0);
 }
 
-inline void SchemerRunner::save_result(const std::string &filepath) const {
+inline void Runner::save_result(const std::string &filepath) const {
     std::ofstream out_stream(filepath);
     if (!out_stream) {
         throw std::runtime_error("Failed to open save file: " + filepath);
@@ -224,3 +228,5 @@ inline void SchemerRunner::save_result(const std::string &filepath) const {
     if (setup.config.verbose > 0)
         std::cout << "Saved to " << filepath << std::endl;
 }
+
+} // namespace Schemer

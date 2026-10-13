@@ -1,27 +1,29 @@
 /**
-* @file SimulationSetup.h
+* @file Setup.h
  * @brief Defines the complete setup structure needed to run a simulation.
  */
 
 #pragma once
 
-#include "SchemerConfig.h"
+#include "Config.h"
 #include <Eigen/Dense>
 #include <variant>
 #include <vector>
 
+namespace Schemer {
+
 /**
- * @struct SchemerSetup
+ * @struct Setup
  * @brief Holds all pre-calculated matrices, initial conditions, and configuration settings.
  *
  * Packs together everything required by the simulation runner to advance time steps,
  * including solver settings, initial grid values, step matrices, and external forces.
  */
-struct SchemerSetup {
+struct Setup {
     /**
      * @brief Configuration settings including physical parameters, time steps, and grid details.
      */
-    SchemerConfig config;
+    Config config;
 
     /**
      * @brief Pre-calculated system matrix used to compute each step forward in time.
@@ -44,5 +46,7 @@ struct SchemerSetup {
      * Holds either a single constant value applied everywhere (`double`) or
      * individual force values for each grid point (`std::vector<double>`).
      */
-    std::variant<double, std::vector<double>> force_variant;
+    std::variant<double, std::vector<double> > force_variant;
 };
+
+} // namespace Schemer

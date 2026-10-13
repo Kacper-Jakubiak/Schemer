@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.21)
 project(Schemer VERSION 1.0.0 LANGUAGES CXX)
 
+# Header-only library definition
 add_library(Schemer INTERFACE)
 
 target_include_directories(Schemer INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
+)
+
+target_sources(Schemer INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Schemer.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Builder.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Runner.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/FractionalScheme.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Setup.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Config.h>
 )
 
 target_compile_features(Schemer INTERFACE cxx_std_20)

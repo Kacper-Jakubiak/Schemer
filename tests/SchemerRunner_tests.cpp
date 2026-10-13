@@ -1,12 +1,13 @@
 #include <doctest/doctest.h>
-#include <SchemerRunner.h>
-#include <SchemerBuilder.h>
 #include <sstream>
 #include <fstream>
 #include <cstdio>
 
-static SchemerSetup make_setup() {
-    return SchemerBuilder()
+#include <Schemer/Schemer.h>
+using namespace Schemer;
+
+static Setup make_setup() {
+    return Builder()
         .set_alpha(1.5)
         .set_num_intervals(4)
         .set_length(4.0)
@@ -15,9 +16,9 @@ static SchemerSetup make_setup() {
         .build_setup();
 }
 
-TEST_CASE("SchemerRunner execution and state updates") {
-    SchemerSetup setup = make_setup();
-    SchemerRunner runner(setup);
+TEST_CASE("Runner execution and state updates") {
+    Setup setup = make_setup();
+    Runner runner(setup);
 
     SUBCASE("Initial state after construction") {
         CHECK_EQ(runner.get_values().size(), setup.initial_state.size());
@@ -45,9 +46,9 @@ TEST_CASE("SchemerRunner execution and state updates") {
     }
 }
 
-TEST_CASE("SchemerRunner history and file output") {
-    SchemerSetup setup = make_setup();
-    SchemerRunner runner(setup);
+TEST_CASE("Runner history and file output") {
+    Setup setup = make_setup();
+    Runner runner(setup);
 
     SUBCASE("History streaming output") {
         std::stringstream history_stream;
@@ -73,13 +74,13 @@ TEST_CASE("SchemerRunner history and file output") {
     }
 }
 
-TEST_CASE("SchemerRunner copy and move semantics") {
-    SchemerSetup setup = make_setup();
-    SchemerRunner runner1(setup);
+TEST_CASE("Runner copy and move semantics") {
+    Setup setup = make_setup();
+    Runner runner1(setup);
     runner1.run(2);
 
     SUBCASE("Copy constructor creates independent instance") {
-        SchemerRunner runner2(runner1);
+        Runner runner2(runner1);
         CHECK(runner2.get_values().isApprox(runner1.get_values()));
 
         runner1.run(3);
@@ -88,7 +89,7 @@ TEST_CASE("SchemerRunner copy and move semantics") {
 
     SUBCASE("Move constructor transfers state successfully") {
         Eigen::VectorXd expected = runner1.get_values();
-        SchemerRunner runner2(std::move(runner1));
+        Runner runner2(std::move(runner1));
 
         CHECK(runner2.get_values().isApprox(expected));
     }

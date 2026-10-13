@@ -4,16 +4,17 @@
 #include <variant>
 #include <vector>
 
-#include "SchemerBuilder.h"
+#include <Schemer/Schemer.h>
+using namespace Schemer;
 
-static SchemerBuilder get_valid_builder() {
-    return SchemerBuilder().set_alpha(1.5);
+static Builder get_valid_builder() {
+    return Builder().set_alpha(1.5);
 }
 
-TEST_CASE("SchemerBuilder build_setup uses default inputs") {
-    SchemerBuilder builder = get_valid_builder();
+TEST_CASE("Builder build_setup uses default inputs") {
+    Builder builder = get_valid_builder();
 
-    const SchemerSetup setup = builder.build_setup();
+    const Setup setup = builder.build_setup();
 
     CHECK_EQ(setup.config.length, 40.0);
     CHECK_EQ(setup.config.num_intervals, 1000);
@@ -32,15 +33,15 @@ TEST_CASE("SchemerBuilder build_setup uses default inputs") {
     CHECK_UNARY(setup.step_matrix.allFinite());
 }
 
-TEST_CASE("SchemerBuilder build_setup places initial state at zero index") {
-    SchemerBuilder builder;
+TEST_CASE("Builder build_setup places initial state at zero index") {
+    Builder builder;
     builder.set_alpha(1.5)
            .set_num_intervals(4)
            .set_length(4.0)
            .set_dt(0.01)
            .set_zero_index(1);
 
-    const SchemerSetup setup = builder.build_setup();
+    const Setup setup = builder.build_setup();
 
     CHECK_EQ(setup.starting_index, 1);
     CHECK_EQ(setup.initial_state(0), 0.0);
@@ -50,15 +51,15 @@ TEST_CASE("SchemerBuilder build_setup places initial state at zero index") {
     CHECK_EQ(setup.initial_state(4), 0.0);
 }
 
-TEST_CASE("SchemerBuilder build_setup places initial state at zero distance") {
-    SchemerBuilder builder;
+TEST_CASE("Builder build_setup places initial state at zero distance") {
+    Builder builder;
     builder.set_alpha(1.5)
            .set_num_intervals(4)
            .set_length(8.0)
            .set_dt(0.01)
            .set_zero_distance(2.0);
 
-    const SchemerSetup setup = builder.build_setup();
+    const Setup setup = builder.build_setup();
 
     CHECK_EQ(setup.config.zero_input.type, ZeroInput::Type::Distance);
     CHECK_EQ(setup.config.zero_input.distance, 2.0);
@@ -70,8 +71,8 @@ TEST_CASE("SchemerBuilder build_setup places initial state at zero distance") {
     CHECK_EQ(setup.initial_state(4), 0.0);
 }
 
-TEST_CASE("SchemerBuilder build_setup uses configured index and vectors") {
-    SchemerBuilder builder;
+TEST_CASE("Builder build_setup uses configured index and vectors") {
+    Builder builder;
     const std::vector<double> initial_values{1.0, 2.0, 3.0, 4.0, 5.0};
     const std::vector<double> force_values{-1.0, -0.5, 0.0, 0.5, 1.0};
     builder.set_alpha(1.5)
@@ -84,7 +85,7 @@ TEST_CASE("SchemerBuilder build_setup uses configured index and vectors") {
            .set_reset_index(3)
            .set_reset_rate(0.2);
 
-    const SchemerSetup setup = builder.build_setup();
+    const Setup setup = builder.build_setup();
 
     CHECK_EQ(setup.starting_index, 1);
     CHECK_EQ(setup.config.zero_input.type, ZeroInput::Type::Index);
@@ -104,8 +105,8 @@ TEST_CASE("SchemerBuilder build_setup uses configured index and vectors") {
     CHECK_UNARY(setup.step_matrix.allFinite());
 }
 
-TEST_CASE("SchemerBuilder build_setup evaluates force at configured coordinates") {
-    SchemerBuilder builder;
+TEST_CASE("Builder build_setup evaluates force at configured coordinates") {
+    Builder builder;
     builder.set_alpha(1.5)
            .set_num_intervals(4)
            .set_length(8.0)
@@ -113,7 +114,7 @@ TEST_CASE("SchemerBuilder build_setup evaluates force at configured coordinates"
            .set_zero_distance(4.0)
            .set_force([](const double x) { return 2.0 * x; });
 
-    const SchemerSetup setup = builder.build_setup();
+    const Setup setup = builder.build_setup();
 
     CHECK_EQ(setup.starting_index, 2);
     CHECK_EQ(setup.config.zero_input.type, ZeroInput::Type::Distance);
@@ -125,8 +126,8 @@ TEST_CASE("SchemerBuilder build_setup evaluates force at configured coordinates"
                 (std::vector<double>{-8.0, -4.0, 0.0, 4.0, 8.0}));
 }
 
-TEST_CASE("SchemerBuilder basic construction") {
-    SchemerBuilder builder;
+TEST_CASE("Builder basic construction") {
+    Builder builder;
     builder.set_num_intervals(10)
            .set_alpha(1.0)
            .set_beta(0.0)
@@ -136,7 +137,7 @@ TEST_CASE("SchemerBuilder basic construction") {
            .set_theta(0.5);
 }
 
-TEST_CASE("SchemerBuilder validate_parameters") {
+TEST_CASE("Builder validate_parameters") {
     SUBCASE("alpha too small") {
         auto builder = get_valid_builder();
         builder.set_alpha(0.0);

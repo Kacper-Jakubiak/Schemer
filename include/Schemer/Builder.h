@@ -1,12 +1,12 @@
 /**
- * @file SchemerBuilder.h
+ * @file Builder.h
  * @brief Builder class for setting up and creating simulation runners.
  */
 
 #pragma once
 
-#include "SchemerRunner.h"
-#include "SchemerConfig.h"
+#include "Runner.h"
+#include "Config.h"
 #include "FractionalScheme.h"
 #include <Eigen/Dense>
 #include <functional>
@@ -16,19 +16,21 @@
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
-#include <utility>
+
+
+namespace Schemer {
 
 /**
- * @class SchemerBuilder
+ * @class Builder
  * @brief Configures simulation settings step-by-step and creates a runner.
  *
  * Provides method chaining to set physical parameters, initial grid values,
  * origin position, and external forces before building the final runner object.
  */
-class SchemerBuilder {
+class Builder {
 private:
     /// Internal configuration object storing parameters and grid settings.
-    SchemerConfig inner_config;
+    Config inner_config;
 
     /**
      * @brief Checks if all settings and parameters are valid before building.
@@ -39,28 +41,28 @@ private:
      * @brief Calculates grid point index corresponding to origin x = 0.0.
      * @return Eigen::Index Grid index for the origin.
      */
-     Eigen::Index compute_starting_index() const;
+    Eigen::Index compute_starting_index() const;
 
     /**
      * @brief Creates starting value vector for all grid points at t = 0.
      * @param starting_index Grid point index for origin x = 0.0.
      * @return Eigen::VectorXd Initial grid values vector.
      */
-     Eigen::VectorXd compute_initial_state(Eigen::Index starting_index) const;
+    Eigen::VectorXd compute_initial_state(Eigen::Index starting_index) const;
 
     /**
      * @brief Converts configured external force into scalar or vector format.
      * @param starting_index Grid point index for origin x = 0.0.
      * @return std::variant<double, std::vector<double>> Force representation.
      */
-     std::variant<double, std::vector<double>> compute_force_variant(Eigen::Index starting_index) const;
+    std::variant<double, std::vector<double> > compute_force_variant(Eigen::Index starting_index) const;
 
     /**
      * @brief Calculates grid point index for the probability reset target location.
      * @param starting_index Grid point index corresponding to origin x = 0.0.
      * @return Eigen::Index Grid index for the reset target.
      */
-     Eigen::Index compute_reset_index(Eigen::Index starting_index) const;
+    Eigen::Index compute_reset_index(Eigen::Index starting_index) const;
 
     /**
      * @brief Builds time-stepping matrix based on current settings and forces.
@@ -68,7 +70,8 @@ private:
      * @param reset_target Grid index where siphoned probability is concentrated.
      * @return Eigen::MatrixXd Time step update matrix.
      */
-     Eigen::MatrixXd compute_step_matrix(const std::variant<double, std::vector<double>> &force_variant, Eigen::Index reset_target) const;
+    Eigen::MatrixXd compute_step_matrix(const std::variant<double, std::vector<double> > &force_variant,
+                                        Eigen::Index reset_target) const;
 
 public:
     /**
@@ -76,7 +79,7 @@ public:
      * @param value Parameter value (\alpha = 2.0 gives standard Gaussian diffusion).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_alpha(double value) {
+    Builder &set_alpha(double value) {
         inner_config.alpha = value;
         return *this;
     }
@@ -86,7 +89,7 @@ public:
      * @param value Parameter value (0 gives symmetric spread, negative leans left, positive leans right).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_beta(double value) {
+    Builder &set_beta(double value) {
         inner_config.beta = value;
         return *this;
     }
@@ -96,7 +99,7 @@ public:
      * @param value Spread/dispersion factor of the diffusion profile.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_sigma(double value) {
+    Builder &set_sigma(double value) {
         inner_config.sigma = value;
         return *this;
     }
@@ -106,7 +109,7 @@ public:
      * @param value Total domain length in simulation units.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_length(double value) {
+    Builder &set_length(double value) {
         inner_config.length = value;
         return *this;
     }
@@ -116,7 +119,7 @@ public:
      * @param value Constant force value.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_drift(double value) {
+    Builder &set_drift(double value) {
         if (inner_config.force_input.type != ForceInput::Type::Drift) {
             std::cerr << "[WARNING]: force was previously set. Drift will be used instead\n";
         }
@@ -132,7 +135,7 @@ public:
      * @param value List containing force values for all grid points.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_force(std::vector<double> value) {
+    Builder &set_force(std::vector<double> value) {
         if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value != 0.0) {
             std::cerr << "[WARNING]: drift was previously set. Force vector will be used instead\n";
         }
@@ -147,7 +150,7 @@ public:
      * @param value Function taking spatial position x and returning local force.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_force(std::function<double(double)> value) {
+    Builder &set_force(std::function<double(double)> value) {
         if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value != 0.0) {
             std::cerr << "[WARNING]: drift was previously set. Force function will be used instead\n";
         }
@@ -162,7 +165,7 @@ public:
      * @param value Duration of a single step forward in time.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_dt(double value) {
+    Builder &set_dt(double value) {
         inner_config.dt = value;
         return *this;
     }
@@ -172,7 +175,7 @@ public:
      * @param value Number of segments (creates N + 1 total grid points).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_num_intervals(Eigen::Index value) {
+    Builder &set_num_intervals(Eigen::Index value) {
         inner_config.num_intervals = value;
         return *this;
     }
@@ -182,7 +185,7 @@ public:
      * @param value Value weighting scheme (0.0 explicit, 0.5 semi-implicit, 1.0 implicit).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_theta(double value) {
+    Builder &set_theta(double value) {
         inner_config.theta = value;
         return *this;
     }
@@ -192,7 +195,7 @@ public:
      * @param value Verbosity level for built objects.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_verbosity(int value) {
+    Builder &set_verbosity(int value) {
         inner_config.verbose = value;
         return *this;
     }
@@ -202,7 +205,7 @@ public:
      * @param value Delimiter sequence (e.g., tab or comma).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_delimiter(std::string value) {
+    Builder &set_delimiter(std::string value) {
         inner_config.delimiter = std::move(value);
         return *this;
     }
@@ -212,7 +215,7 @@ public:
      * @param value Progress update threshold percentage (%).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_log_interval_percent(double value) {
+    Builder &set_log_interval_percent(double value) {
         inner_config.log_interval_percent = value;
         return *this;
     }
@@ -222,7 +225,7 @@ public:
      * @param value Vector holding initial values for all grid points.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_initial_conditions(const Eigen::VectorXd &value) {
+    Builder &set_initial_conditions(const Eigen::VectorXd &value) {
         inner_config.values_input.vector = value;
         inner_config.values_input.type = ValuesInput::Type::Vector;
         return *this;
@@ -233,7 +236,7 @@ public:
      * @param value List holding initial values for all grid points.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_initial_conditions(const std::vector<double> &value) {
+    Builder &set_initial_conditions(const std::vector<double> &value) {
         inner_config.values_input.vector = Eigen::VectorXd::Map(value.data(), static_cast<Eigen::Index>(value.size()));
         inner_config.values_input.type = ValuesInput::Type::Vector;
         return *this;
@@ -244,7 +247,7 @@ public:
      * @param value Grid index representing position x = 0.0.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_zero_index(Eigen::Index value) {
+    Builder &set_zero_index(Eigen::Index value) {
         inner_config.zero_input.index = value;
         inner_config.zero_input.type = ZeroInput::Type::Index;
         return *this;
@@ -255,7 +258,7 @@ public:
      * @param value Distance value in length units from the left edge.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_zero_distance(double value) {
+    Builder &set_zero_distance(double value) {
         inner_config.zero_input.distance = value;
         inner_config.zero_input.type = ZeroInput::Type::Distance;
         return *this;
@@ -265,7 +268,7 @@ public:
      * @brief Places origin x = 0.0 at an exact center of domain.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_zero_middle() {
+    Builder &set_zero_middle() {
         inner_config.zero_input.type = ZeroInput::Type::Middle;
         return *this;
     }
@@ -274,7 +277,7 @@ public:
      * @brief Sets the probability reset target to the spatial origin (x = 0.0).
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_reset_index_zero() {
+    Builder &set_reset_index_zero() {
         inner_config.reset_input.type = ResetInput::Type::Zero;
         return *this;
     }
@@ -284,7 +287,7 @@ public:
      * @param value Grid index for the reset target.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_reset_index(Eigen::Index value) {
+    Builder &set_reset_index(Eigen::Index value) {
         inner_config.reset_input.index = value;
         inner_config.reset_input.type = ResetInput::Type::Index;
         return *this;
@@ -295,7 +298,7 @@ public:
      * @param value Reset rate value.
      * @return SchemerBuilder& Reference to this builder for chaining.
      */
-    SchemerBuilder &set_reset_rate(double value) {
+    Builder &set_reset_rate(double value) {
         inner_config.reset_input.rate = value;
         return *this;
     }
@@ -304,18 +307,18 @@ public:
      * @brief Builds and returns a fully configured simulation runner ready to execute.
      * @return SchemerRunner Ready-to-run simulation solver object.
      */
-     SchemerRunner build() const {
-        return SchemerRunner(build_setup());
-     }
+    Runner build() const {
+        return Runner(build_setup());
+    }
 
     /**
      * @brief Prepares and returns a complete simulation setup structure.
      * @return SimulationSetup Prepared setup with configuration, matrices, and initial states.
      */
-     SchemerSetup build_setup() const;
+    Setup build_setup() const;
 };
 
-inline void SchemerBuilder::validate_parameters() const {
+inline void Builder::validate_parameters() const {
     if (inner_config.alpha <= 0.0 || inner_config.alpha >= 2.0) throw std::invalid_argument("alpha must be in (0, 2]");
     if (std::abs(inner_config.beta) > 1.0) throw std::invalid_argument("beta must be in [-1, 1]");
     if (inner_config.sigma < 0.0) throw std::invalid_argument("sigma must be non-negative");
@@ -324,7 +327,8 @@ inline void SchemerBuilder::validate_parameters() const {
     if (inner_config.dt <= 0.0) throw std::invalid_argument("dt must be positive");
     if (inner_config.num_intervals <= 0) throw std::invalid_argument("grid_points must be positive");
     if (inner_config.theta < 0.0 || inner_config.theta > 1.0) throw std::invalid_argument("theta must be in [0, 1]");
-    if (inner_config.log_interval_percent < 0.0) throw std::invalid_argument("log interval percent must be non-negative");
+    if (inner_config.log_interval_percent < 0.0) throw std::invalid_argument(
+        "log interval percent must be non-negative");
     if (inner_config.reset_input.rate < 0.0) throw std::invalid_argument("reset input rate must be non-negative");
 
     if (std::abs(inner_config.alpha - 1) < FractionalScheme::ALPHA_EPSILON && inner_config.beta != 0.0) {
@@ -336,7 +340,7 @@ inline void SchemerBuilder::validate_parameters() const {
     }
 }
 
-inline Eigen::Index SchemerBuilder::compute_starting_index() const {
+inline Eigen::Index Builder::compute_starting_index() const {
     switch (inner_config.zero_input.type) {
         case ZeroInput::Type::Middle:
             return inner_config.num_intervals / 2;
@@ -358,8 +362,8 @@ inline Eigen::Index SchemerBuilder::compute_starting_index() const {
 
             if (std::abs(distance_difference) > 1e-9) {
                 std::cerr << "[WARNING] Target distance " << inner_config.zero_input.distance
-                          << " snapped to grid index " << real_index
-                          << " (discrepancy: " << distance_difference << ")\n";
+                        << " snapped to grid index " << real_index
+                        << " (discrepancy: " << distance_difference << ")\n";
             }
 
             if (real_index < 0 || real_index > inner_config.num_intervals)
@@ -373,7 +377,7 @@ inline Eigen::Index SchemerBuilder::compute_starting_index() const {
     }
 }
 
-inline Eigen::VectorXd SchemerBuilder::compute_initial_state(const Eigen::Index starting_index) const {
+inline Eigen::VectorXd Builder::compute_initial_state(const Eigen::Index starting_index) const {
     const Eigen::Index grid_size = inner_config.get_size();
     Eigen::VectorXd starting_values = Eigen::VectorXd::Zero(grid_size);
 
@@ -395,7 +399,7 @@ inline Eigen::VectorXd SchemerBuilder::compute_initial_state(const Eigen::Index 
     return starting_values;
 }
 
-inline std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(
+inline std::variant<double, std::vector<double> > Builder::compute_force_variant(
     const Eigen::Index starting_index) const {
     switch (inner_config.force_input.type) {
         case ForceInput::Type::Drift:
@@ -423,7 +427,7 @@ inline std::variant<double, std::vector<double>> SchemerBuilder::compute_force_v
     }
 }
 
-inline Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index starting_index) const {
+inline Eigen::Index Builder::compute_reset_index(const Eigen::Index starting_index) const {
     switch (inner_config.reset_input.type) {
         case ResetInput::Type::Index:
             if (inner_config.reset_input.index < 0 || inner_config.reset_input.index >= inner_config.get_size())
@@ -437,8 +441,8 @@ inline Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index start
     }
 }
 
-inline Eigen::MatrixXd SchemerBuilder::compute_step_matrix(
-    const std::variant<double, std::vector<double>>& force_variant, const Eigen::Index reset_index) const {
+inline Eigen::MatrixXd Builder::compute_step_matrix(
+    const std::variant<double, std::vector<double> > &force_variant, const Eigen::Index reset_index) const {
     const FractionalScheme fractional_scheme{inner_config};
 
     const Eigen::MatrixXd diffusion_matrix = fractional_scheme.build_diffusion_matrix();
@@ -457,7 +461,7 @@ inline Eigen::MatrixXd SchemerBuilder::compute_step_matrix(
     return solver.solve(Rhs);
 }
 
-inline SchemerSetup SchemerBuilder::build_setup() const {
+inline Setup Builder::build_setup() const {
     validate_parameters();
 
     const Eigen::Index starting_index = compute_starting_index();
@@ -468,7 +472,7 @@ inline SchemerSetup SchemerBuilder::build_setup() const {
 
     Eigen::MatrixXd step_matrix = compute_step_matrix(force_variant, reset_index);
 
-    return SchemerSetup{
+    return Setup{
         .config = inner_config,
         .step_matrix = std::move(step_matrix),
         .initial_state = std::move(initial_state),
@@ -476,3 +480,5 @@ inline SchemerSetup SchemerBuilder::build_setup() const {
         .force_variant = std::move(force_variant)
     };
 }
+
+} // namespace Schemer

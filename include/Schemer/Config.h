@@ -10,6 +10,8 @@
 #include <functional>
 #include <Eigen/Dense>
 
+namespace Schemer {
+
 /**
  * @struct ZeroInput
  * @brief Configuration for positioning the spatial origin (x = 0.0) on the grid.
@@ -20,14 +22,14 @@ struct ZeroInput {
      * @brief Method used to position the spatial origin.
      */
     enum class Type {
-        Middle,   ///< Place origin at the exact center of the grid.
-        Index,    ///< Place origin at a specific grid index.
-        Distance  ///< Place origin at a physical distance measured from the left edge.
+        Middle, ///< Place origin at the exact center of the grid.
+        Index, ///< Place origin at a specific grid index.
+        Distance ///< Place origin at a physical distance measured from the left edge.
     };
 
-    Type type = Type::Middle;               ///< Selected positioning method.
-    Eigen::Index index = -1;                ///< Grid index when type is Index.
-    double distance = 0.0;                  ///< Distance from left edge when type is Distance.
+    Type type = Type::Middle; ///< Selected positioning method.
+    Eigen::Index index = -1; ///< Grid index when type is Index.
+    double distance = 0.0; ///< Distance from left edge when type is Distance.
 };
 
 /**
@@ -40,11 +42,11 @@ struct ValuesInput {
      * @brief Type of starting values.
      */
     enum class Type {
-        Dirac,  ///< Single peak (impulse) at the origin (x = 0.0).
-        Vector  ///< Custom starting values provided for all grid points.
+        Dirac, ///< Single peak (impulse) at the origin (x = 0.0).
+        Vector ///< Custom starting values provided for all grid points.
     };
 
-    Type type = Type::Dirac;                    ///< Selected value type.
+    Type type = Type::Dirac; ///< Selected value type.
     Eigen::VectorXd vector = Eigen::VectorXd(); ///< Custom vector when type is Vector.
 };
 
@@ -58,15 +60,15 @@ struct ForceInput {
      * @brief Type of external force.
      */
     enum class Type {
-        Drift,    ///< Constant force applied uniformly across the domain.
+        Drift, ///< Constant force applied uniformly across the domain.
         Function, ///< Spatially varying force defined by a function f(x).
-        Vector    ///< Custom force value provided for each grid point.
+        Vector ///< Custom force value provided for each grid point.
     };
 
-    Type type = Type::Drift;                            ///< Selected force type.
-    double drift_value = 0.0;                           ///< Force value when type is Drift.
-    std::function<double(double)> force_function;       ///< Function when type is Function.
-    std::vector<double> force_vector;                   ///< Vector when type is Vector.
+    Type type = Type::Drift; ///< Selected force type.
+    double drift_value = 0.0; ///< Force value when type is Drift.
+    std::function<double(double)> force_function; ///< Function when type is Function.
+    std::vector<double> force_vector; ///< Vector when type is Vector.
 };
 
 /**
@@ -79,12 +81,12 @@ struct ResetInput {
      * @brief Method used to specify the reset target location.
      */
     enum class Type {
-        Zero,   ///< Reset probability to the spatial origin (x = 0.0).
-        Index   ///< Reset probability to a specific grid index.
+        Zero, ///< Reset probability to the spatial origin (x = 0.0).
+        Index ///< Reset probability to a specific grid index.
     };
 
-    Type type = Type::Zero;   ///< Selected reset target type.
-    Eigen::Index index = 0;   ///< Grid index when type is Index.
+    Type type = Type::Zero; ///< Selected reset target type.
+    Eigen::Index index = 0; ///< Grid index when type is Index.
 
     /**
      * @brief Rate of probability siphoning for stochastic resetting.
@@ -93,10 +95,10 @@ struct ResetInput {
 };
 
 /**
- * @struct SchemerConfig
+ * @struct Config
  * @brief Holds all simulation settings, physical parameters, grid specs, and file output options.
  */
-struct SchemerConfig {
+struct Config {
     /**
      * @brief Stability parameter (\alpha).
      *
@@ -185,7 +187,7 @@ struct SchemerConfig {
      * @brief Calculates uniform grid step size (\Delta x).
      * @return double Grid step size.
      */
-     constexpr double get_dx() const noexcept {
+    constexpr double get_dx() const noexcept {
         return length / static_cast<double>(num_intervals);
     }
 
@@ -193,7 +195,7 @@ struct SchemerConfig {
      * @brief Gets the total number of grid points (N + 1).
      * @return Eigen::Index Total grid point count.
      */
-     constexpr Eigen::Index get_size() const noexcept {
+    constexpr Eigen::Index get_size() const noexcept {
         return num_intervals + 1;
     }
 
@@ -202,7 +204,7 @@ struct SchemerConfig {
      * @param starting_index Grid point index corresponding to x = 0.0.
      * @return std::vector<double> List of spatial positions.
      */
-     std::vector<double> get_coordinates(const Eigen::Index starting_index) const {
+    std::vector<double> get_coordinates(const Eigen::Index starting_index) const {
         const double dx = get_dx();
         const auto total_points = get_size();
         std::vector<double> coords(static_cast<std::size_t>(total_points));
@@ -213,3 +215,5 @@ struct SchemerConfig {
         return coords;
     }
 };
+
+} // namespace Schemer
