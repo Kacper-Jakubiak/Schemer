@@ -71,7 +71,7 @@ SchemerBuilder &SchemerBuilder::set_dt(const double value) {
     return *this;
 }
 
-SchemerBuilder &SchemerBuilder::set_num_intervals(const long long int value) {
+SchemerBuilder &SchemerBuilder::set_num_intervals(const Eigen::Index value) {
     inner_config.num_intervals = value;
     return *this;
 }
@@ -115,7 +115,7 @@ SchemerBuilder &SchemerBuilder::set_initial_conditions(const std::vector<double>
 
 // --- Zero Placement Options ---
 
-SchemerBuilder &SchemerBuilder::set_zero_index(const long long int value) {
+SchemerBuilder &SchemerBuilder::set_zero_index(const Eigen::Index value) {
     inner_config.zero_input.index = value;
     inner_config.zero_input.type = ZeroInput::Type::Index;
     return *this;
