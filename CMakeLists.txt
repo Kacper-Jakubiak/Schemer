@@ -1,31 +1,25 @@
 cmake_minimum_required(VERSION 3.21)
 project(Schemer VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Header-only library definition
+add_library(Schemer INTERFACE)
 
-add_library(Schemer
-        include/Config.h
-        include/SimulationSetup.h
-        include/SchemerBuilder.h
-        include/SchemerRunner.h
-        include/FractionalScheme.h
-        include/Schemer.h
-
-        src/SchemerBuilder_setters.cpp
-        src/SchemerBuilder_build.cpp
-        src/SchemerRunner.cpp
-        src/FractionalScheme.cpp
-)
-
-target_include_directories(Schemer PUBLIC
+target_include_directories(Schemer INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-add_library(Schemer::Schemer ALIAS Schemer)
+target_sources(Schemer INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Schemer.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Builder.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Runner.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/FractionalScheme.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Setup.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Config.h>
+)
 
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+target_compile_features(Schemer INTERFACE cxx_std_20)
+add_library(Schemer::Schemer ALIAS Schemer)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -35,7 +29,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-target_link_libraries(Schemer PUBLIC Eigen3::Eigen)
+target_link_libraries(Schemer INTERFACE Eigen3::Eigen)
 
-enable_testing()
-add_subdirectory(tests)
+option(BUILD_TESTING "Build the testing tree for Schemer" ${PROJECT_IS_TOP_LEVEL})
+
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

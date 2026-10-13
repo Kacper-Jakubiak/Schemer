@@ -29,12 +29,17 @@ A modern, high-performance, C++ library.
 ## Requirements
 
 To build and use this library, you need:
-- A C++17 (or C++20) compatible compiler (GCC 9+, Clang 10+, MSVC 2019+)
-- CMake 3.15 or higher
+- A C++20 compatible compiler (GCC 9+, Clang 10+, MSVC 2019+)
+- CMake 3.21 or higher
 
 ---
 
 ## Installation
+
+Schemer is header-only. Include `Schemer.h` (or an individual public header) and
+link the CMake interface target `Schemer::Schemer` to inherit the Eigen
+dependency and C++20 requirement; no Schemer library binary needs to be built
+or distributed.
 
 ### Option 1: CMake `FetchContent` (Recommended)
 
