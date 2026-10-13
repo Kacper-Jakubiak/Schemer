@@ -9,7 +9,6 @@ target_include_directories(Schemer INTERFACE
 )
 
 target_compile_features(Schemer INTERFACE cxx_std_20)
-
 add_library(Schemer::Schemer ALIAS Schemer)
 
 include(FetchContent)
@@ -22,7 +21,9 @@ FetchContent_MakeAvailable(eigen)
 
 target_link_libraries(Schemer INTERFACE Eigen3::Eigen)
 
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+option(BUILD_TESTING "Build the testing tree for Schemer" ${PROJECT_IS_TOP_LEVEL})
 
-enable_testing()
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

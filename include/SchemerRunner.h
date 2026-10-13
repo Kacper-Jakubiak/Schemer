@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
-#include <Eigen/Dense>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -17,7 +16,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include "SimulationSetup.h"
+#include "SchemerSetup.h"
 
 /**
  * @class SchemerRunner
@@ -32,7 +31,7 @@ private:
     static constexpr std::string_view LOG_FILE_PATH = "progress.log";
 
     /// Setup used to create this simulation.
-    SimulationSetup setup;
+    SchemerSetup setup;
 
     /// Total number of time steps completed so far.
     int steps_taken = 0;
@@ -64,7 +63,7 @@ public:
      * @brief Creates a simulation runner using a given setup.
      * @param setup Setup object containing settings, matrices, and initial values.
      */
-    explicit SchemerRunner(SimulationSetup setup) : setup(std::move(setup)) {reset();}
+    explicit SchemerRunner(SchemerSetup setup) : setup(std::move(setup)) { reset(); }
 
     ~SchemerRunner() = default;
 
@@ -99,6 +98,18 @@ public:
      * @param filepath Path to the output file on disk.
      */
     void save_result(const std::string &filepath) const;
+
+    /**
+     * @brief Gets a copy of the internal simulation setup.
+     * @return SimulationSetup Copy of the setup configuration and matrices.
+     */
+    SchemerSetup get_setup() const { return setup; }
+
+    /**
+     * @brief Gets a copy of the current grid values vector.
+     * @return Eigen::VectorXd Copy of current state values.
+     */
+    Eigen::VectorXd get_values() const { return current_values; }
 };
 
 inline void SchemerRunner::log(std::ostream &os, const double progress_percent) {

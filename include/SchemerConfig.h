@@ -93,10 +93,10 @@ struct ResetInput {
 };
 
 /**
- * @struct Config
+ * @struct SchemerConfig
  * @brief Holds all simulation settings, physical parameters, grid specs, and file output options.
  */
-struct Config {
+struct SchemerConfig {
     /**
      * @brief Stability parameter (\alpha).
      *
@@ -202,7 +202,7 @@ struct Config {
      * @param starting_index Grid point index corresponding to x = 0.0.
      * @return std::vector<double> List of spatial positions.
      */
-     std::vector<double> get_coordinates(const Eigen::Index starting_index = 0) const {
+     std::vector<double> get_coordinates(const Eigen::Index starting_index) const {
         const double dx = get_dx();
         const auto total_points = get_size();
         std::vector<double> coords(static_cast<std::size_t>(total_points));

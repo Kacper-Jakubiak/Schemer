@@ -5,23 +5,23 @@
 
 #pragma once
 
-#include "Config.h"
+#include "SchemerConfig.h"
 #include <Eigen/Dense>
 #include <variant>
 #include <vector>
 
 /**
- * @struct SimulationSetup
+ * @struct SchemerSetup
  * @brief Holds all pre-calculated matrices, initial conditions, and configuration settings.
  *
  * Packs together everything required by the simulation runner to advance time steps,
  * including solver settings, initial grid values, step matrices, and external forces.
  */
-struct SimulationSetup {
+struct SchemerSetup {
     /**
      * @brief Configuration settings including physical parameters, time steps, and grid details.
      */
-    Config config;
+    SchemerConfig config;
 
     /**
      * @brief Pre-calculated system matrix used to compute each step forward in time.

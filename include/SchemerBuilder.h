@@ -6,7 +6,7 @@
 #pragma once
 
 #include "SchemerRunner.h"
-#include "Config.h"
+#include "SchemerConfig.h"
 #include "FractionalScheme.h"
 #include <Eigen/Dense>
 #include <functional>
@@ -28,7 +28,7 @@
 class SchemerBuilder {
 private:
     /// Internal configuration object storing parameters and grid settings.
-    Config inner_config;
+    SchemerConfig inner_config;
 
     /**
      * @brief Checks if all settings and parameters are valid before building.
@@ -312,7 +312,7 @@ public:
      * @brief Prepares and returns a complete simulation setup structure.
      * @return SimulationSetup Prepared setup with configuration, matrices, and initial states.
      */
-     SimulationSetup build_setup() const;
+     SchemerSetup build_setup() const;
 };
 
 inline void SchemerBuilder::validate_parameters() const {
@@ -457,7 +457,7 @@ inline Eigen::MatrixXd SchemerBuilder::compute_step_matrix(
     return solver.solve(Rhs);
 }
 
-inline SimulationSetup SchemerBuilder::build_setup() const {
+inline SchemerSetup SchemerBuilder::build_setup() const {
     validate_parameters();
 
     const Eigen::Index starting_index = compute_starting_index();
@@ -468,7 +468,7 @@ inline SimulationSetup SchemerBuilder::build_setup() const {
 
     Eigen::MatrixXd step_matrix = compute_step_matrix(force_variant, reset_index);
 
-    return SimulationSetup{
+    return SchemerSetup{
         .config = inner_config,
         .step_matrix = std::move(step_matrix),
         .initial_state = std::move(initial_state),

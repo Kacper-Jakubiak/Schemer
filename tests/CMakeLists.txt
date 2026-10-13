@@ -10,7 +10,12 @@ FetchContent_Declare(
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 FetchContent_MakeAvailable(doctest)
 
-add_executable(schemer_tests test_main.cpp)
+add_executable(schemer_tests
+        test_main.cpp
+        SchemerConfig_tests.cpp
+        SchemerBuilder_tests.cpp
+        SchemerRunner_tests.cpp
+)
 target_link_libraries(schemer_tests PRIVATE Schemer::Schemer doctest::doctest)
 
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)

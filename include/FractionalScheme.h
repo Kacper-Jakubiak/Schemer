@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Config.h"
+#include "SchemerConfig.h"
 #include <Eigen/Dense>
 #include <cmath>
 #include <numbers>
@@ -29,7 +29,7 @@ public:
      * @brief Construct a new FractionalScheme object with configuration settings.
      * @param config Reference to the Config object containing simulation settings.
      */
-    explicit FractionalScheme(const Config& config);
+    explicit FractionalScheme(const SchemerConfig& config);
 
     /**     * @brief Builds the main spatial diffusion matrix.
      *
@@ -62,7 +62,7 @@ public:
 
 private:
     /// Reference to simulation settings.
-    const Config& config;
+    const SchemerConfig& config;
 
     /// Weight for the left-side fractional derivative (\omega_L).
     double L_omega;
@@ -118,7 +118,7 @@ private:
      Eigen::MatrixXd build_force(const std::vector<double>& force) const;
 };
 
-inline FractionalScheme::FractionalScheme(const Config& config) : config(config) {
+inline FractionalScheme::FractionalScheme(const SchemerConfig& config) : config(config) {
     const double alpha = config.alpha;
     const double dx = config.get_dx();
     n = std::ceil(alpha);
