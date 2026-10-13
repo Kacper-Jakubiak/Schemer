@@ -6,7 +6,9 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <ostream>
 #include <string>
+#include <string_view>
 #include "SimulationSetup.h"
 
 /**
@@ -87,3 +89,5 @@ public:
      */
     void save_result(const std::string &filepath) const;
 };
+
+#include "detail/SchemerRunner.inl"

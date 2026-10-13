@@ -1,16 +1,137 @@
-/**
- * @file SchemerBuilder_build.cpp
- * @brief Build and validation logic for the solver.
- */
+#pragma once
 
-#include "../include/SchemerBuilder.h"
+#include <cmath>
 #include <iostream>
-#include <fstream>
 #include <stdexcept>
+#include <utility>
 
-#include "../include/FractionalScheme.h"
+inline SchemerBuilder &SchemerBuilder::set_alpha(const double value) {
+    inner_config.alpha = value;
+    return *this;
+}
 
-void SchemerBuilder::validate_parameters() const {
+inline SchemerBuilder &SchemerBuilder::set_beta(const double value) {
+    inner_config.beta = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_sigma(const double value) {
+    inner_config.sigma = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_length(const double value) {
+    inner_config.length = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_drift(const double value) {
+    if (inner_config.force_input.type != ForceInput::Type::Drift) {
+        std::cerr << "[WARNING]: force was previously set. Drift will be used instead\n";
+    }
+    inner_config.force_input.drift_value = value;
+    inner_config.force_input.type = ForceInput::Type::Drift;
+    inner_config.force_input.force_function = nullptr;
+    inner_config.force_input.force_vector.clear();
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_force(std::vector<double> value) {
+    if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value != 0.0) {
+        std::cerr << "[WARNING]: drift was previously set. Force vector will be used instead\n";
+    }
+    inner_config.force_input.force_vector = std::move(value);
+    inner_config.force_input.type = ForceInput::Type::Vector;
+    inner_config.force_input.force_function = nullptr;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_force(std::function<double(double)> value) {
+    if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value != 0.0) {
+        std::cerr << "[WARNING]: drift was previously set. Force function will be used instead\n";
+    }
+    inner_config.force_input.force_function = std::move(value);
+    inner_config.force_input.type = ForceInput::Type::Function;
+    inner_config.force_input.force_vector.clear();
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_dt(const double value) {
+    inner_config.dt = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_num_intervals(const Eigen::Index value) {
+    inner_config.num_intervals = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_theta(const double value) {
+    inner_config.theta = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_verbosity(const int value) {
+    inner_config.verbose = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_delimiter(std::string value) {
+    inner_config.delimiter = std::move(value);
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_log_interval_percent(const double value) {
+    inner_config.log_interval_percent = value;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_initial_conditions(const Eigen::VectorXd &value) {
+    inner_config.values_input.vector = value;
+    inner_config.values_input.type = ValuesInput::Type::Vector;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_initial_conditions(const std::vector<double> &value) {
+    inner_config.values_input.vector = Eigen::VectorXd::Map(value.data(), static_cast<Eigen::Index>(value.size()));
+    inner_config.values_input.type = ValuesInput::Type::Vector;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_zero_index(const Eigen::Index value) {
+    inner_config.zero_input.index = value;
+    inner_config.zero_input.type = ZeroInput::Type::Index;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_zero_distance(const double value) {
+    inner_config.zero_input.distance = value;
+    inner_config.zero_input.type = ZeroInput::Type::Distance;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_zero_middle() {
+    inner_config.zero_input.type = ZeroInput::Type::Middle;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_reset_index_zero() {
+    inner_config.reset_input.type = ResetInput::Type::Zero;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_reset_index(const Eigen::Index value) {
+    inner_config.reset_input.index = value;
+    inner_config.reset_input.type = ResetInput::Type::Index;
+    return *this;
+}
+
+inline SchemerBuilder &SchemerBuilder::set_reset_rate(const double value) {
+    inner_config.reset_input.rate = value;
+    return *this;
+}
+
+inline void SchemerBuilder::validate_parameters() const {
     if (inner_config.alpha <= 0.0 || inner_config.alpha >= 2.0) throw std::invalid_argument("alpha must be in (0, 2]");
     if (std::abs(inner_config.beta) > 1.0) throw std::invalid_argument("beta must be in [-1, 1]");
     if (inner_config.sigma < 0.0) throw std::invalid_argument("sigma must be non-negative");
@@ -22,31 +143,26 @@ void SchemerBuilder::validate_parameters() const {
     if (inner_config.log_interval_percent < 0.0) throw std::invalid_argument("log interval percent must be non-negative");
     if (inner_config.reset_input.rate < 0.0) throw std::invalid_argument("reset input rate must be non-negative");
 
-    // (beta != 0) is not supported when alpha = 1.0
     if (std::abs(inner_config.alpha - 1) < FractionalScheme::ALPHA_EPSILON && inner_config.beta != 0.0) {
         throw std::invalid_argument("beta != 0.0 not supported for alpha = 1.0");
     }
 
-    // Soft warning for large time steps
     if (inner_config.dt > 1.0) {
         std::cerr << "[WARNING] dt > 1.0\n" << std::endl;
     }
 }
 
-Eigen::Index SchemerBuilder::compute_starting_index() const {
+inline Eigen::Index SchemerBuilder::compute_starting_index() const {
     switch (inner_config.zero_input.type) {
         case ZeroInput::Type::Middle:
-            // Place zero reference point at the exact center of the grid
             return inner_config.num_intervals / 2;
 
         case ZeroInput::Type::Index:
-            // Use the explicit user-provided grid index
             if (inner_config.zero_input.index < 0 || inner_config.zero_input.index > inner_config.num_intervals)
                 throw std::invalid_argument("initial_index must be in [0, I]");
             return inner_config.zero_input.index;
 
         case ZeroInput::Type::Distance: {
-            // Convert physical distance offset to nearest discrete grid index
             if (inner_config.zero_input.distance < 0.0 || inner_config.zero_input.distance > inner_config.length)
                 throw std::invalid_argument("initial_distance must be in [0, length]");
 
@@ -56,11 +172,10 @@ Eigen::Index SchemerBuilder::compute_starting_index() const {
             const double actual_distance = static_cast<double>(real_index) * inner_config.length / grid_points_double;
             const double distance_difference = inner_config.zero_input.distance - actual_distance;
 
-            // Warn if distance doesn't align perfectly with grid points
             if (std::abs(distance_difference) > 1e-9) {
                 std::cerr << "[WARNING] Target distance " << inner_config.zero_input.distance
-                        << " snapped to grid index " << real_index
-                        << " (discrepancy: " << distance_difference << ")\n";
+                          << " snapped to grid index " << real_index
+                          << " (discrepancy: " << distance_difference << ")\n";
             }
 
             if (real_index < 0 || real_index > inner_config.num_intervals)
@@ -74,18 +189,16 @@ Eigen::Index SchemerBuilder::compute_starting_index() const {
     }
 }
 
-Eigen::VectorXd SchemerBuilder::compute_initial_state(const Eigen::Index starting_index) const {
+inline Eigen::VectorXd SchemerBuilder::compute_initial_state(const Eigen::Index starting_index) const {
     const Eigen::Index grid_size = inner_config.get_size();
     Eigen::VectorXd starting_values = Eigen::VectorXd::Zero(grid_size);
 
     switch (inner_config.values_input.type) {
         case ValuesInput::Type::Dirac:
-            // Scale Dirac delta point mass based on spatial resolution (1 / dx)
             starting_values(starting_index) = static_cast<double>(inner_config.num_intervals) / inner_config.length;
             break;
 
         case ValuesInput::Type::Vector:
-            // Copy custom user-defined initial vector directly
             if (inner_config.values_input.vector.size() != grid_size)
                 throw std::invalid_argument("initial values must have size I+1");
             starting_values = inner_config.values_input.vector;
@@ -98,7 +211,8 @@ Eigen::VectorXd SchemerBuilder::compute_initial_state(const Eigen::Index startin
     return starting_values;
 }
 
-std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(const Eigen::Index starting_index) const {
+inline std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(
+    const Eigen::Index starting_index) const {
     switch (inner_config.force_input.type) {
         case ForceInput::Type::Drift:
             return inner_config.force_input.drift_value;
@@ -116,7 +230,6 @@ std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(
         }
 
         case ForceInput::Type::Vector:
-            // Use pre-computed spatial force vector
             if (inner_config.force_input.force_vector.size() != inner_config.get_size())
                 throw std::invalid_argument("force vector must have size I+1");
             return inner_config.force_input.force_vector;
@@ -126,7 +239,7 @@ std::variant<double, std::vector<double>> SchemerBuilder::compute_force_variant(
     }
 }
 
-Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index starting_index) const {
+inline Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index starting_index) const {
     switch (inner_config.reset_input.type) {
         case ResetInput::Type::Index:
             if (inner_config.reset_input.index < 0 || inner_config.reset_input.index >= inner_config.get_size())
@@ -140,7 +253,8 @@ Eigen::Index SchemerBuilder::compute_reset_index(const Eigen::Index starting_ind
     }
 }
 
-Eigen::MatrixXd SchemerBuilder::compute_step_matrix(const std::variant<double, std::vector<double>>& force_variant, const Eigen::Index reset_index) const {
+inline Eigen::MatrixXd SchemerBuilder::compute_step_matrix(
+    const std::variant<double, std::vector<double>>& force_variant, const Eigen::Index reset_index) const {
     const FractionalScheme fractional_scheme{inner_config};
 
     const Eigen::MatrixXd diffusion_matrix = fractional_scheme.build_diffusion_matrix();
@@ -159,7 +273,7 @@ Eigen::MatrixXd SchemerBuilder::compute_step_matrix(const std::variant<double, s
     return solver.solve(Rhs);
 }
 
-SimulationSetup SchemerBuilder::build_setup() const {
+inline SimulationSetup SchemerBuilder::build_setup() const {
     validate_parameters();
 
     const Eigen::Index starting_index = compute_starting_index();
@@ -179,6 +293,6 @@ SimulationSetup SchemerBuilder::build_setup() const {
     };
 }
 
-SchemerRunner SchemerBuilder::build() const {
+inline SchemerRunner SchemerBuilder::build() const {
     return SchemerRunner(build_setup());
 }

@@ -7,10 +7,12 @@
 
 #include "SchemerRunner.h"
 #include "Config.h"
+#include "FractionalScheme.h"
 #include <Eigen/Dense>
 #include <functional>
 #include <vector>
 #include <variant>
+#include <string>
 
 /**
  * @class SchemerBuilder
@@ -222,3 +224,5 @@ public:
      */
      SimulationSetup build_setup() const;
 };
+
+#include "detail/SchemerBuilder.inl"

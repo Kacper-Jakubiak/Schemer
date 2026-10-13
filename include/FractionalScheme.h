@@ -29,8 +29,7 @@ public:
      */
     explicit FractionalScheme(const Config& config);
 
-    /**
-     * @brief Builds the main spatial diffusion matrix.
+    /**     * @brief Builds the main spatial diffusion matrix.
      *
      * Calls build_M1(), build_M2(), or build_M3() depending on the value of \alpha.
      *
@@ -116,3 +115,5 @@ private:
      */
      Eigen::MatrixXd build_force(const std::vector<double>& force) const;
 };
+
+#include "detail/FractionalScheme.inl"

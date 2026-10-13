@@ -1,31 +1,16 @@
 cmake_minimum_required(VERSION 3.21)
 project(Schemer VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_library(Schemer INTERFACE)
 
-add_library(Schemer
-        include/Config.h
-        include/SimulationSetup.h
-        include/SchemerBuilder.h
-        include/SchemerRunner.h
-        include/FractionalScheme.h
-        include/Schemer.h
-
-        src/SchemerBuilder_setters.cpp
-        src/SchemerBuilder_build.cpp
-        src/SchemerRunner.cpp
-        src/FractionalScheme.cpp
-)
-
-target_include_directories(Schemer PUBLIC
+target_include_directories(Schemer INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-add_library(Schemer::Schemer ALIAS Schemer)
+target_compile_features(Schemer INTERFACE cxx_std_20)
 
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+add_library(Schemer::Schemer ALIAS Schemer)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -35,7 +20,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-target_link_libraries(Schemer PUBLIC Eigen3::Eigen)
+target_link_libraries(Schemer INTERFACE Eigen3::Eigen)
+
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 enable_testing()
 add_subdirectory(tests)

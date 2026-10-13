@@ -1,8 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include "Config.h"
-#include "SchemerBuilder.h"
+#include "Schemer.h"
 
 TEST_CASE("Config default values") {
     const Config config;

@@ -1,24 +1,19 @@
-/**
- * @file SchemerRunner.cpp
- * @brief Simulation execution and result saving.
- */
+#pragma once
 
-#include "../include/SchemerRunner.h"
-#include <iostream>
-#include <ostream>
-#include <fstream>
-#include <Eigen/Dense>
-#include <utility>
+#include <algorithm>
 #include <chrono>
+#include <ctime>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <stdexcept>
+#include <utility>
 
-#include "../include/SimulationSetup.h"
-
-SchemerRunner::SchemerRunner(SimulationSetup setup) : setup(std::move(setup)) {
+inline SchemerRunner::SchemerRunner(SimulationSetup setup) : setup(std::move(setup)) {
     reset();
 }
 
-void SchemerRunner::log(std::ostream &os, const double progress_percent) {
+inline void SchemerRunner::log(std::ostream &os, const double progress_percent) {
     const auto now = std::chrono::system_clock::now();
     const auto time = std::chrono::system_clock::to_time_t(now);
 
@@ -29,7 +24,7 @@ void SchemerRunner::log(std::ostream &os, const double progress_percent) {
        << "%" << std::endl;
 }
 
-void SchemerRunner::save_parameters(std::ostream &os) const {
+inline void SchemerRunner::save_parameters(std::ostream &os) const {
     const auto& config = setup.config;
 
     os << '#' << "alpha: " << config.alpha << '\n';
@@ -69,19 +64,19 @@ void SchemerRunner::save_parameters(std::ostream &os) const {
     os << std::endl;
 }
 
-void SchemerRunner::save_current_values(std::ostream &os) const {
+inline void SchemerRunner::save_current_values(std::ostream &os) const {
     const auto& delimiter = setup.config.delimiter;
     for (Eigen::Index i = 0; i < current_values.size(); i++)
         os << current_values(i) << delimiter;
     os << std::endl;
 }
 
-void SchemerRunner::reset() {
+inline void SchemerRunner::reset() {
     current_values = setup.initial_state;
     steps_taken = 0;
 }
 
-void SchemerRunner::run(const int steps, std::ostream *history_stream, const int save_every) {
+inline void SchemerRunner::run(const int steps, std::ostream *history_stream, const int save_every) {
     if (steps < 0)
         throw std::invalid_argument("amount of steps cannot be negative");
     if (save_every < 0)
@@ -124,7 +119,7 @@ void SchemerRunner::run(const int steps, std::ostream *history_stream, const int
         log(log_stream, 100.0);
 }
 
-void SchemerRunner::save_result(const std::string &filepath) const {
+inline void SchemerRunner::save_result(const std::string &filepath) const {
     std::ofstream out_stream(filepath);
     if (!out_stream) {
         throw std::runtime_error("Failed to open save file: " + filepath);
