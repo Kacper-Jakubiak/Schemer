@@ -62,6 +62,14 @@ public:
      */
     Eigen::MatrixXd build_reset_matrix(Eigen::Index reset_index) const;
 
+    /**
+     * @brief Builds time-stepping matrix based on current settings and forces.
+     * @param force_variant Computed force representation.
+     * @param reset_index Grid index where siphoned probability is concentrated.
+     * @return Eigen::MatrixXd Time step update matrix.
+     */
+    Eigen::MatrixXd build_step_matrix(const std::variant<double, std::vector<double> > &force_variant, Eigen::Index reset_index) const;
+
 private:
     /// Reference to simulation settings.
     const Config &config;
@@ -199,42 +207,52 @@ inline Eigen::MatrixXd FractionalScheme::build_M3() const {
     return M;
 }
 
-inline Eigen::MatrixXd FractionalScheme::build_drift(const double mi) const {
+    inline Eigen::MatrixXd FractionalScheme::build_drift(const double mi) const {
     const Eigen::Index grid_size = config.get_size();
     const double dx = config.get_dx();
     Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
+
+    const double coeff = mi * config.dt / dx;
+
     for (Eigen::Index i = 0; i < grid_size; i++) {
-        V(i, i) = 3.0;
-        if (i >= 1)
-            V(i, i - 1) = -4.0;
-        if (i >= 2)
-            V(i, i - 2) = 1.0;
+        if (mi >= 0) {
+            V(i, i) = 1.0;
+            if (i > 0) {
+                V(i, i - 1) = -1.0;
+            }
+        } else {
+            V(i, i) = -1.0;
+            if (i < grid_size - 1) {
+                V(i, i + 1) = 1.0;
+            }
+        }
     }
 
-    const double ni = mi * config.dt / (2.0 * dx);
-
-    if (mi < 0)
-        return -1.0 * ni * V.transpose();
-    return ni * V;
+    return coeff * V;
 }
 
-inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double> &force) const {
+    inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double> &force) const {
     const Eigen::Index grid_size = config.get_size();
     const double dx = config.get_dx();
     Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
+    const double coeff = config.dt / dx;
 
     for (Eigen::Index i = 0; i < grid_size; i++) {
-        if (i > 0) {
-            V(i, i) -= force[i - 1];
-            V(i, i - 1) -= force[i];
-        }
-        if (i < grid_size - 1) {
-            V(i, i) += force[i + 1];
-            V(i, i + 1) += force[i];
+        double f = force[i];
+        if (f >= 0) {
+            V(i, i) += f;
+            if (i > 0) {
+                V(i, i - 1) -= f;
+            }
+        } else {
+            V(i, i) -= f;
+            if (i < grid_size - 1) {
+                V(i, i + 1) += f;
+            }
         }
     }
-    V *= config.dt / (2 * dx);
-    return V;
+
+    return coeff * V;
 }
 
 inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
@@ -263,6 +281,23 @@ inline Eigen::MatrixXd FractionalScheme::build_reset_matrix(const Eigen::Index r
     }
 
     return -1 * reset_matrix;
+}
+
+inline Eigen::MatrixXd FractionalScheme::build_step_matrix(const std::variant<double, std::vector<double> > &force_variant, const Eigen::Index reset_index) const {
+    const Eigen::MatrixXd diffusion_matrix = build_diffusion_matrix();
+    const Eigen::MatrixXd force_matrix = build_force_matrix(force_variant);
+    const Eigen::MatrixXd reset_rate_matrix = build_reset_matrix(reset_index);
+
+    const Eigen::MatrixXd total_operator = diffusion_matrix + force_matrix + reset_rate_matrix;
+
+    const Eigen::Index grid_size = config.get_size();
+    const Eigen::MatrixXd id = Eigen::MatrixXd::Identity(grid_size, grid_size);
+
+    const Eigen::MatrixXd Lhs = id + config.theta * total_operator;
+    const Eigen::MatrixXd Rhs = id - (1.0 - config.theta) * total_operator;
+
+    const Eigen::PartialPivLU<Eigen::MatrixXd> solver(Lhs);
+    return solver.solve(Rhs);
 }
 
 } // namespace Schemer
