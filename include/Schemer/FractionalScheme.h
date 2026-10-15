@@ -237,18 +237,19 @@ inline Eigen::MatrixXd FractionalScheme::build_M3() const {
     Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
     const double coeff = config.dt / dx;
 
-    for (Eigen::Index i = 0; i < grid_size; i++) {
-        double f = force[i];
-        if (f >= 0) {
-            V(i, i) += f;
-            if (i > 0) {
-                V(i, i - 1) -= f;
-            }
+    // Conservative finite-volume upwind flux loop over cell interfaces (i + 1/2)
+    for (Eigen::Index i = 0; i < grid_size - 1; i++) {
+        // Average force at the interface between cell i and cell i+1
+        double f_half = 0.5 * (force[i] + force[i + 1]);
+
+        if (f_half >= 0) {
+            // Flow goes from left to right (upstream is cell i)
+            V(i, i) += f_half;         // Flux leaves cell i
+            V(i + 1, i) -= f_half;     // Flux enters cell i+1
         } else {
-            V(i, i) -= f;
-            if (i < grid_size - 1) {
-                V(i, i + 1) += f;
-            }
+            // Flow goes from right to left (upstream is cell i+1)
+            V(i, i + 1) += f_half;     // Flux enters cell i (f_half is negative)
+            V(i + 1, i + 1) -= f_half; // Flux leaves cell i+1
         }
     }
 
